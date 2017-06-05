@@ -15,10 +15,19 @@ template = cv2.imread(template_name,0)
 w, h = template.shape[::-1]
 
 res = cv2.matchTemplate(img_gray,template,cv2.TM_CCOEFF_NORMED)
-threshold = 0.6
-loc = np.where( res >= threshold)
-for pt in zip(*loc[::-1]):
+threshold = 0.65
+loc = np.where(res >= threshold)
+pts = zip(*loc[::-1])
+
+
+# filter pts by min_distance px
+# min_distance = 5
+# filtered_pts = 
+# for i in xrange()
+
+for pt in pts:
     cv2.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
 
+print "Found",len(pts),"points."
+
 cv2.imwrite('res.png',img_rgb)
-cv2.imshow('image',img_rgb)
