@@ -22,8 +22,8 @@ pts = zip(*loc[::-1])
 def _distance(p1, p2):
   return math.hypot(p1[0]-p2[0], p1[1]-p2[1])
 
-# filter pts by min_distance px
-min_distance = 10
+# to remove overlapping templates: filter pts by min_distance px
+min_distance = math.hypot(w/2, h/2)
 filtered_pts = [] 
 for pt in pts:
   point_fits = True
@@ -33,6 +33,8 @@ for pt in pts:
       point_fits = False
       break
   if point_fits: filtered_pts.append(pt)
+
+print "Found",len(filtered_pts),"stations."
 
 # take user input
 pt_i = 0
@@ -48,7 +50,6 @@ for pt in filtered_pts:
   stations.append(station_obj)
   cv2.destroyAllWindows()
 
-print "Found",len(filtered_pts),"stations."
 print
 print stations
 cv2.imshow('image',img_rgb)
