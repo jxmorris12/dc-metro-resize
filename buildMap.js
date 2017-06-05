@@ -1,28 +1,58 @@
 // jack morris 06/04/17
 
+
+// Global variables
 var _GoldenRatio = 1.618033988749894848204586834365638117720309179805;
+var chartWidth = 800, chartHeight = chartWidth; /* Aspect ratio must be 1:1! */
+var margin = { 'vertical': 15, 'horizontal': 20 };
+var mainChart;
 
 var createSvg = function() {
-  // Global specs
-  let chartWidth = 800, chartHeight = chartWidth / _GoldenRatio;
   let containerSelector = 'body';
-  let margin = { 'vertical': 15, 'horizontal': 20 };
-  let innerChartWidth = chartWidth - margin.horizontal * 2;
-  let innerChartHeight = chartHeight - margin.vertical * 2;
-
   // Create main SVG
-  let mainChart = d3.select(containerSelector)
+  mainChart = d3.select(containerSelector)
     .append('svg')
     .attr('width', chartWidth)
     .attr('height', chartHeight)
     .attr('class', 'center-block');
+}
 
-  // Compute stuff for scaling
+var loadStations = function() {
+  let innerChartWidth = chartWidth - margin.horizontal * 2;
+  let innerChartHeight = chartHeight - margin.vertical * 2;
+
+  // Get data from map
+  let mapDataCache = {};
+  for(let i in stationMapLocs) {
+    let station = stationMapLocs[i];
+    let stationName = station['Name'];
+    let stationMapCoords = station['Map Coords'];
+    mapDataCache[stationName] = stationMapCoords;
+  }
+
+  // Add map data to stations
+  stations.forEach(entry => {
+    let name = entry['Name'];
+    entry['mapX'] = mapDataCache[name][0];
+    entry['mapY'] = mapDataCache[name][1];
+  })
+
+  // Compute stuff for scaling map coords
+  let mapX = stations.map(x => { return x['mapX'] });
+  let minMapX = Math.min.apply(this, mapX);
+  let maxMapX = Math.max.apply(this, mapX);
+  let rangeMapX = maxMapX - minMapX;
+
+  let mapY = stations.map(x => { return x['mapY'] });
+  let minMapY = Math.min.apply(this, mapY);
+  let maxMapY = Math.max.apply(this, mapY);
+  let rangeMapY = maxMapY - minMapY;
+
+  // Compute stuff for scaling lat & lon
   let stationLats = stations.map(x => { return x["Lat"]});
   let minLat = Math.min.apply(this, stationLats);
   let maxLat = Math.max.apply(this, stationLats);
   let rangeLat = maxLat - minLat;
-  console.log(minLat, rangeLat);
 
   let stationLons = stations.map(x => { return x["Lon"]});
   let minLon = Math.min.apply(this, stationLons);
@@ -34,18 +64,45 @@ var createSvg = function() {
     .data(stations)
     .enter()
     .append("circle")
-    .attr("cx", function(d, i) { 
+    .attr("cx1", function(d, i) { 
       return margin.horizontal + (d["Lat"] - minLat) / rangeLat * innerChartWidth;
     })
-    .attr("cy", (d, i) => { 
+    .attr("cy1", (d, i) => { 
       return margin.vertical + (d["Lon"] - minLon) / rangeLon * innerChartHeight;
     })
-    .attr('r', 3);
+    .attr("cx2", function(d, i) {
+      return margin.horizontal + (d['mapX'] - minMapX) / rangeMapX * innerChartWidth;
+    })
+    .attr("cy2", function(d, i) {
+      return margin.vertical + (d['mapY'] - minMapY) / rangeMapY * innerChartHeight;
+    })
+    .attr('class', 'station');
+}
+
+var loadRails = function() {
+
+}
+
+var setStartingPositions = function() {
+  $('circle').each(function(x) {
+    $(this).attr('cx', $(this).attr('cx2'));
+    $(this).attr('cy', $(this).attr('cy2'));
+  })
 }
 
 
 var load = function() {
+  // Create main SVG
   createSvg();
+
+  // Load station circles
+  loadStations();
+
+  // Draw lines between points
+  loadRails();
+
+  // Set starting positions
+  setStartingPositions();
 }
 
 $(document).ready(load);
