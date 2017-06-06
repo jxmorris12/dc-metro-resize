@@ -1,8 +1,13 @@
 // jack morris 06/04/17
 
+// Metro color scheme
+var metroLineColors = {
+  'red': '#df0a2d'
+}
+
 // Global variables
 var _GoldenRatio = 1.618033988749894848204586834365638117720309179805;
-var chartWidth = 800, chartHeight = chartWidth; /* Aspect ratio must be 1:1! */
+var chartWidth = 600, chartHeight = chartWidth; /* Aspect ratio must be 1:1! */
 var margin = { 'vertical': 15, 'horizontal': 20 };
 var mainChart;
 
@@ -80,7 +85,7 @@ var loadStations = function() {
 }
 
 var _twoDigitString = function(i) {
-  return ( (i < 10) ? '0' : '' ) + i;
+  return ((i < 10) ? '0' : '') + i;
 }
 
 var expandLineLists = function() {
@@ -118,13 +123,29 @@ var expandLineLists = function() {
 
 /* This would be nicer if I knew how to build each path from coordinates using D3. Sad! */
 var drawConnectingLines = function() {
-  for(let lineColor in lines) {
-    let stops = lines[lineColor];
+  for(let lineName in lines) {
+    let stops = lines[lineName];
     let d = '';
     for(let i in stops) {
+      // Get station element for this circle
       let stop = stops[i];
-      
+      let stationSelector = '[station-code^="' + stop + '"]';
+      console.log(stationSelector);
+      let stationCircle = $(stationSelector);
+      // Get circle coordinates
+      let cx = stationCircle.attr('cx');
+      let cy = stationCircle.attr('cy');
+      // Add letter
+      d += (i == 0) ? 'M' : ' L' ;
+      // Add coords
+      d += ' ' + cx + ' ' + cy;
     }
+    // Create element
+    mainChart
+      .insert('path', ":first-child")
+      .attr('d', d)
+      .attr('class', 'rail')
+      .style('stroke', metroLineColors[lineName]);
   }
 }
 
@@ -132,6 +153,7 @@ var loadRails = function() {
   // Expand line range info
   expandLineLists();
   // Draw all connecting lines
+  drawConnectingLines();
 }
 
 var setStartingPositions = function() {
@@ -149,11 +171,11 @@ var load = function() {
   // Load station circles
   loadStations();
 
-  // Draw lines between points
-  loadRails();
-
   // Set starting positions
   setStartingPositions();
+
+  // Draw lines between points
+  loadRails();
 }
 
 $(document).ready(load);
