@@ -5,6 +5,9 @@
   stroke-width: 4px;
   r: 6;
 }
+.large-station {
+  r: 12;
+}
 .rail {
   stroke-width: 13px;
   fill: none;
@@ -14,7 +17,6 @@ svg {
   overflow: visible;
 }
 circle {
-  display: none;
 }
 path {
   stroke-linecap: round;

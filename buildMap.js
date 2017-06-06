@@ -12,7 +12,7 @@ var metroLineColors = {
 
 // Stations that were never provided by the API (I don't know why)
 let metroNonexistentStations = 'N05 C11';
-let showStationIcons = false;
+let showStationIcons = true;
 
 // Global variables
 let animationDuration = 12000; /* Milliseconds */
@@ -25,12 +25,12 @@ let _mapVerticalRatio = 816 / 950.0; /* Since the original map wasn't square */
 // Chart definitions
 var margin = { 'vertical': 15, 'horizontal': 30 }; /* Manual SVG padding, just in case */
 var chartWidth = 950 + margin.vertical * 2, chartHeight = (chartWidth - margin.vertical * 2) * _mapVerticalRatio + margin.horizontal * 2; /* Aspect ratio must be 1:1! */
-var mainChart;
+var mainChart, mainChartSelector;
 
 var createSvg = function() {
-  let containerSelector = 'body';
+  mainChartSelector = 'body';
   // Create main SVG
-  mainChart = d3.select(containerSelector)
+  mainChart = d3.select(mainChartSelector)
     .append('svg')
     .attr('width', chartWidth)
     .attr('height', chartHeight)
@@ -167,6 +167,16 @@ var expandLineLists = function() {
   }
 }
 
+var loadTransferStations = function() {
+  transferStations.forEach(transferStationName => {
+    let originalStation = $('[station-name^="' + transferStationName + '"]');
+    let newStation = originalStation.clone();
+    newStation.attr('class', 'large-station station');
+    console.log('add !', newStation);
+    $('svg').prepend(newStation);
+  });
+}
+
 /* This would be nicer if I knew how to build each path from coordinates using D3. Sad! */
 var drawConnectingLines = function() {
   for(let lineName in lines) {
@@ -230,6 +240,9 @@ var load = function() {
   // Load station circles
   loadStations();
 
+  // Load double circles
+  loadTransferStations();
+
   // Set starting positions
   setStartingPositions(2);
 
@@ -246,7 +259,8 @@ var load = function() {
   console.log(svgTransform);
 
   if(showStationIcons == false) {
-    $('circle > animate').remove();
+    $('circle > *').remove();
+    $('circle').css('display', 'none');
   }
 }
 
