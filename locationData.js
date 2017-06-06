@@ -9,5 +9,10 @@ var stationMapLocs = [{'Name': 'Glenmont', 'Map Coords': [520, 28]}, {'Name': 'W
 
 /* rail data */
 var lines = {
-  "red": ["A15:A01", "B01:B11"]
+  'red': ['A15:A01', 'B01:B11'],
+  'orange': ['K08:K01', 'C05:C01', 'D01:D13'],
+  'silver': ['N06:N01','K05:K01', 'C05:C01', 'D01:D08', 'G01:G05'],
+  'green': ['E10:E01', 'F01:F11'],
+  'yellow': ['E10:E01', 'F01:F03', 'C07:C15'],
+  'blue': ['J03', 'J02', 'C13:C01', 'D01:D08', 'G01:G05']
 };

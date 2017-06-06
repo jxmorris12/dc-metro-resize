@@ -1,14 +1,25 @@
 // jack morris 06/04/17
 
-// Metro color scheme
+// Metro color scheme (approximated from image)
 var metroLineColors = {
-  'red': '#df0a2d'
+  'blue'   : '#0095df',
+  'green'  : '#00b24a',
+  'orange' : '#f78a00',
+  'red'    : '#df0a2d',
+  'silver' : '#a5a5a5',
+  'yellow' : '#ffd500'
 }
 
+// Stations that were never provided by the API (I don't know why)
+let metroNonexistentStations = 'N05 C11';
+
 // Global variables
-var _GoldenRatio = 1.618033988749894848204586834365638117720309179805;
-var chartWidth = 600, chartHeight = chartWidth; /* Aspect ratio must be 1:1! */
-var margin = { 'vertical': 15, 'horizontal': 20 };
+var _GoldenRatio = 1.618033988749894848204586834365638117720309179805; /* Ahhh.... */
+let _mapVerticalRatio = 816 / 950.0; /* Since the original map wasn't square */
+
+// Chart definitions
+var margin = { 'vertical': 15, 'horizontal': 30 }; /* Manual SVG padding, just in case */
+var chartWidth = 950 + margin.vertical * 2, chartHeight = (chartWidth - margin.vertical * 2) * _mapVerticalRatio + margin.horizontal * 2; /* Aspect ratio must be 1:1! */
 var mainChart;
 
 var createSvg = function() {
@@ -81,6 +92,7 @@ var loadStations = function() {
       return margin.vertical + (d['mapY'] - minMapY) / rangeMapY * innerChartHeight;
     })
     .attr('station-code', d => { return d['Code'] })
+    .attr('station-name', d => { return d['Name'] })
     .attr('class', 'station');
 }
 
@@ -113,7 +125,11 @@ var expandLineLists = function() {
         let rangeStep = (rangeStart < rangeEnd) ? +1 : -1;
         while(rangeStart != rangeEnd) {
           rangeStart += rangeStep;
-          newLineOrder.push(rangeLetter + _twoDigitString(rangeStart));
+          let nextStationName = rangeLetter + _twoDigitString(rangeStart);
+          if(metroNonexistentStations.includes(nextStationName)) {
+            continue;
+          }
+          newLineOrder.push(nextStationName);
         }
       }
     }
@@ -125,27 +141,36 @@ var expandLineLists = function() {
 var drawConnectingLines = function() {
   for(let lineName in lines) {
     let stops = lines[lineName];
-    let d = '';
+    let d1 = ''; let d2 = '';
     for(let i in stops) {
       // Get station element for this circle
       let stop = stops[i];
       let stationSelector = '[station-code^="' + stop + '"]';
-      console.log(stationSelector);
       let stationCircle = $(stationSelector);
       // Get circle coordinates
-      let cx = stationCircle.attr('cx');
-      let cy = stationCircle.attr('cy');
+      let cx1 = stationCircle.attr('cx1');
+      let cy1 = stationCircle.attr('cy1');
+      let cx2 = stationCircle.attr('cx2');
+      let cy2 = stationCircle.attr('cy2');
       // Add letter
-      d += (i == 0) ? 'M' : ' L' ;
+      let nextLetter = (i == 0) ? 'M' : ' L';
+      d1 += nextLetter;
+      d2 += nextLetter;
       // Add coords
-      d += ' ' + cx + ' ' + cy;
+      d1 += ' ' + cx1 + ' ' + cy1;
+      d2 += ' ' + cx2 + ' ' + cy2;
     }
     // Create element
     mainChart
       .insert('path', ":first-child")
-      .attr('d', d)
+      .attr('d', d2)
       .attr('class', 'rail')
-      .style('stroke', metroLineColors[lineName]);
+      .style('stroke', metroLineColors[lineName])
+      .append('animate')
+      .attr('dur', '5s')
+      .attr('repeatCount', 'indefinite')
+      .attr('attributeName', 'd')
+      .attr('values', d1 + '; ' + d2)
   }
 }
 
@@ -176,6 +201,15 @@ var load = function() {
 
   // Draw lines between points
   loadRails();
+
+  // Scale SVG to fit in width
+  let windowBoundary = Math.min( $(window).width(), $(window).height() );
+  let desiredSvgHeight = windowBoundary * (5/6.0);
+  let necessarySvgScale = desiredSvgHeight / $('svg').height();
+  let heightDifference = desiredSvgHeight - $('svg').height();
+  let svgTransform = 'scale(' + necessarySvgScale + ') translateY(' + heightDifference/2 + 'px)';
+  $('svg').css('transform', svgTransform);
+  console.log(svgTransform);
 }
 
 $(document).ready(load);

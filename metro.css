@@ -6,6 +6,10 @@
   r: 6;
 }
 .rail {
-  stroke-width: 8px;
+  stroke-width: 13px;
   fill: none;
+}
+svg {
+  border: 2px solid #e0e0e0;
+  overflow: visible;
 }
