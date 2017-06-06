@@ -93,24 +93,33 @@ var loadStations = function() {
       return margin.vertical + (d['mapY'] - minMapY) / rangeMapY * innerChartHeight;
     })
     .attr("cx2", function(d, i) {
-      return margin.horizontal + (d['mapX'] - minMapX) / rangeMapX * innerChartWidth;
+      return margin.vertical + (d["Lon"] - minLon) / rangeLon * innerChartHeight;      
     })
     .attr("cx1", function(d, i) { 
-      return margin.vertical + (d["Lon"] - minLon) / rangeLon * innerChartHeight;      
+      return margin.horizontal + (d['mapX'] - minMapX) / rangeMapX * innerChartWidth;
     });
-    /* Animate circle x */
-  stationPoints.append('animate')
-    .attr('dur', animationDuration + 'ms')
-    .attr('repeatCount', 'none')
-    .attr('attributeName', '0')
-    .attr('values', d => { return d['Lat']} );
 
-    /* Animate circle y */
+  /* Animate circle x */
   stationPoints.insert('animate')
     .attr('dur', animationDuration + 'ms')
     .attr('repeatCount', 'none')
-    .attr('attributeName', '1')
-    .attr('values', d => { return d['Lon']} );
+    .attr('attributeName', 'cx')
+    .attr('values', d => { 
+      let cx1 = margin.vertical + (d["Lon"] - minLon) / rangeLon * innerChartHeight;      
+      let cx2 = margin.horizontal + (d['mapX'] - minMapX) / rangeMapX * innerChartWidth;
+      return createValuesForAnimation(cx1, cx2);
+    });
+  
+  /* Animate circle y */
+  stationPoints.append('animate')
+    .attr('dur', animationDuration + 'ms')
+    .attr('repeatCount', 'none')
+    .attr('attributeName', 'cy')
+    .attr('values', d => { 
+      let cy1 = margin.horizontal + (d["Lat"] - minLat) / rangeLat * innerChartWidth;
+      let cy2 = margin.vertical + (d['mapY'] - minMapY) / rangeMapY * innerChartHeight;
+      return createValuesForAnimation(cy1, cy2); 
+    });
 }
 
 var _twoDigitString = function(i) {
@@ -187,7 +196,7 @@ var drawConnectingLines = function() {
       .attr('dur', animationDuration + 'ms')
       .attr('repeatCount', 'none')
       .attr('attributeName', 'd')
-      .attr('values', d1 + '; ' + d2 + ';' + d2 + '; ' + d1 + ';' + d1)
+      .attr('values', createValuesForAnimation(d1, d2));
   }
 }
 
@@ -205,6 +214,10 @@ var setStartingPositions = function() {
   })
 }
 
+// Helper method for creating animation attributes
+var createValuesForAnimation = function(a, b) {
+  return a + '; ' + b + ';' + b + '; ' + a + ';' + a
+}
 
 var load = function() {
   // Create main SVG
