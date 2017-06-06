@@ -14,6 +14,9 @@ var metroLineColors = {
 let metroNonexistentStations = 'N05 C11';
 
 // Global variables
+let animationDuration = 3000; /* Milliseconds */
+
+// Global constants
 var _GoldenRatio = 1.618033988749894848204586834365638117720309179805; /* Ahhh.... */
 let _mapVerticalRatio = 816 / 950.0; /* Since the original map wasn't square */
 
@@ -75,25 +78,39 @@ var loadStations = function() {
   let rangeLon = maxLon - minLon;
 
   // Create points
-  mainChart.selectAll("text")
+  let stationPoints = mainChart
+    .selectAll("text")
     .data(stations)
     .enter()
     .append("circle")
-    .attr("cx1", function(d, i) { 
-      return margin.horizontal + (d["Lat"] - minLat) / rangeLat * innerChartWidth;
-    })
+    .attr('station-code', d => { return d['Code'] })
+    .attr('station-name', d => { return d['Name'] })
+    .attr('class', 'station')
     .attr("cy1", (d, i) => { 
-      return margin.vertical + (d["Lon"] - minLon) / rangeLon * innerChartHeight;
-    })
-    .attr("cx2", function(d, i) {
-      return margin.horizontal + (d['mapX'] - minMapX) / rangeMapX * innerChartWidth;
+      return margin.horizontal + (d["Lat"] - minLat) / rangeLat * innerChartWidth;
     })
     .attr("cy2", function(d, i) {
       return margin.vertical + (d['mapY'] - minMapY) / rangeMapY * innerChartHeight;
     })
-    .attr('station-code', d => { return d['Code'] })
-    .attr('station-name', d => { return d['Name'] })
-    .attr('class', 'station');
+    .attr("cx2", function(d, i) {
+      return margin.horizontal + (d['mapX'] - minMapX) / rangeMapX * innerChartWidth;
+    })
+    .attr("cx1", function(d, i) { 
+      return margin.vertical + (d["Lon"] - minLon) / rangeLon * innerChartHeight;      
+    });
+    /* Animate circle x */
+  stationPoints.append('animate')
+    .attr('dur', animationDuration + 'ms')
+    .attr('repeatCount', 'none')
+    .attr('attributeName', '0')
+    .attr('values', d => { return d['Lat']} );
+
+    /* Animate circle y */
+  stationPoints.insert('animate')
+    .attr('dur', animationDuration + 'ms')
+    .attr('repeatCount', 'none')
+    .attr('attributeName', '1')
+    .attr('values', d => { return d['Lon']} );
 }
 
 var _twoDigitString = function(i) {
@@ -167,10 +184,10 @@ var drawConnectingLines = function() {
       .attr('class', 'rail')
       .style('stroke', metroLineColors[lineName])
       .append('animate')
-      .attr('dur', '5s')
-      .attr('repeatCount', 'indefinite')
+      .attr('dur', animationDuration + 'ms')
+      .attr('repeatCount', 'none')
       .attr('attributeName', 'd')
-      .attr('values', d1 + '; ' + d2)
+      .attr('values', d1 + '; ' + d2 + ';' + d2 + '; ' + d1 + ';' + d1)
   }
 }
 
@@ -183,8 +200,8 @@ var loadRails = function() {
 
 var setStartingPositions = function() {
   $('circle').each(function(x) {
-    $(this).attr('cx', $(this).attr('cx2'));
-    $(this).attr('cy', $(this).attr('cy2'));
+    $(this).attr('cx', $(this).attr('cx1'));
+    $(this).attr('cy', $(this).attr('cy1'));
   })
 }
 
