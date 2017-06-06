@@ -12,9 +12,11 @@ var metroLineColors = {
 
 // Stations that were never provided by the API (I don't know why)
 let metroNonexistentStations = 'N05 C11';
+let showStationIcons = false;
 
 // Global variables
-let animationDuration = 3000; /* Milliseconds */
+let animationDuration = 12000; /* Milliseconds */
+var animationRepeatState = 'indefinite'; /* { none, indefinite } */
 
 // Global constants
 var _GoldenRatio = 1.618033988749894848204586834365638117720309179805; /* Ahhh.... */
@@ -67,12 +69,12 @@ var loadStations = function() {
   let rangeMapY = maxMapY - minMapY;
 
   // Compute stuff for scaling lat & lon
-  let stationLats = stations.map(x => { return x["Lat"]});
+  let stationLats = stations.map(x => { return x["Lat"] * -1});
   let minLat = Math.min.apply(this, stationLats);
   let maxLat = Math.max.apply(this, stationLats);
   let rangeLat = maxLat - minLat;
 
-  let stationLons = stations.map(x => { return x["Lon"]});
+  let stationLons = stations.map(x => { return x["Lon"] });
   let minLon = Math.min.apply(this, stationLons);
   let maxLon = Math.max.apply(this, stationLons);
   let rangeLon = maxLon - minLon;
@@ -86,38 +88,40 @@ var loadStations = function() {
     .attr('station-code', d => { return d['Code'] })
     .attr('station-name', d => { return d['Name'] })
     .attr('class', 'station')
-    .attr("cy1", (d, i) => { 
-      return margin.horizontal + (d["Lat"] - minLat) / rangeLat * innerChartWidth;
-    })
-    .attr("cy2", function(d, i) {
-      return margin.vertical + (d['mapY'] - minMapY) / rangeMapY * innerChartHeight;
-    })
-    .attr("cx2", function(d, i) {
-      return margin.vertical + (d["Lon"] - minLon) / rangeLon * innerChartHeight;      
-    })
+    /* Point set 1 - metro map */
     .attr("cx1", function(d, i) { 
       return margin.horizontal + (d['mapX'] - minMapX) / rangeMapX * innerChartWidth;
+    })
+    .attr("cy1", (d, i) => { 
+      return margin.vertical + (d['mapY'] - minMapY) / rangeMapY * innerChartHeight;
+    })
+    /* Point set 2 - lat & lon */
+    .attr("cx2", function(d, i) {
+      return margin.horizontal + (d["Lon"] - minLon) / rangeLon * innerChartWidth;      
+    })
+    .attr("cy2", function(d, i) {
+      return margin.vertical + (d["Lat"] * -1 - minLat) / rangeLat * innerChartHeight;
     });
 
   /* Animate circle x */
   stationPoints.insert('animate')
     .attr('dur', animationDuration + 'ms')
-    .attr('repeatCount', 'none')
+    .attr('repeatCount', animationRepeatState)
     .attr('attributeName', 'cx')
     .attr('values', d => { 
-      let cx1 = margin.vertical + (d["Lon"] - minLon) / rangeLon * innerChartHeight;      
-      let cx2 = margin.horizontal + (d['mapX'] - minMapX) / rangeMapX * innerChartWidth;
+      let cx1 = margin.horizontal + (d['mapX'] - minMapX) / rangeMapX * innerChartWidth;
+      let cx2 = margin.horizontal + (d["Lon"] - minLon) / rangeLon * innerChartWidth;
       return createValuesForAnimation(cx1, cx2);
     });
   
   /* Animate circle y */
   stationPoints.append('animate')
     .attr('dur', animationDuration + 'ms')
-    .attr('repeatCount', 'none')
+    .attr('repeatCount', animationRepeatState)
     .attr('attributeName', 'cy')
     .attr('values', d => { 
-      let cy1 = margin.horizontal + (d["Lat"] - minLat) / rangeLat * innerChartWidth;
-      let cy2 = margin.vertical + (d['mapY'] - minMapY) / rangeMapY * innerChartHeight;
+      let cy1 = margin.vertical + (d['mapY'] - minMapY) / rangeMapY * innerChartHeight;
+      let cy2 = margin.vertical + (d["Lat"] * -1 - minLat) / rangeLat * innerChartHeight;
       return createValuesForAnimation(cy1, cy2); 
     });
 }
@@ -194,7 +198,7 @@ var drawConnectingLines = function() {
       .style('stroke', metroLineColors[lineName])
       .append('animate')
       .attr('dur', animationDuration + 'ms')
-      .attr('repeatCount', 'none')
+      .attr('repeatCount', animationRepeatState)
       .attr('attributeName', 'd')
       .attr('values', createValuesForAnimation(d1, d2));
   }
@@ -207,10 +211,10 @@ var loadRails = function() {
   drawConnectingLines();
 }
 
-var setStartingPositions = function() {
+var setStartingPositions = function(n) {
   $('circle').each(function(x) {
-    $(this).attr('cx', $(this).attr('cx1'));
-    $(this).attr('cy', $(this).attr('cy1'));
+    $(this).attr('cx', $(this).attr('cx' + n));
+    $(this).attr('cy', $(this).attr('cy' + n));
   })
 }
 
@@ -227,7 +231,7 @@ var load = function() {
   loadStations();
 
   // Set starting positions
-  setStartingPositions();
+  setStartingPositions(2);
 
   // Draw lines between points
   loadRails();
@@ -240,6 +244,10 @@ var load = function() {
   let svgTransform = 'scale(' + necessarySvgScale + ') translateY(' + heightDifference/2 + 'px)';
   $('svg').css('transform', svgTransform);
   console.log(svgTransform);
+
+  if(showStationIcons == false) {
+    $('circle > animate').remove();
+  }
 }
 
 $(document).ready(load);
