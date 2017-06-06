@@ -1,6 +1,5 @@
 // jack morris 06/04/17
 
-
 // Global variables
 var _GoldenRatio = 1.618033988749894848204586834365638117720309179805;
 var chartWidth = 800, chartHeight = chartWidth; /* Aspect ratio must be 1:1! */
@@ -76,11 +75,63 @@ var loadStations = function() {
     .attr("cy2", function(d, i) {
       return margin.vertical + (d['mapY'] - minMapY) / rangeMapY * innerChartHeight;
     })
+    .attr('station-code', d => { return d['Code'] })
     .attr('class', 'station');
 }
 
-var loadRails = function() {
+var _twoDigitString = function(i) {
+  return ( (i < 10) ? '0' : '' ) + i;
+}
 
+var expandLineLists = function() {
+  for(let color in lines) {
+    let lineOrder = lines[color];
+    let newLineOrder = [];
+    for(let i in lineOrder) {
+      let lineRange = lineOrder[i];
+      // return;
+      if(!lineRange.includes(':')) {
+        newLineOrder.push(lineRange);
+      } else {
+        // Get numbers and letter
+        let rangePoints = lineRange.split(':');
+        let rangeLetter = lineRange[0];
+        // Get range endpoints
+        let rangeStart = rangePoints[0];
+        let rangeEnd = rangePoints[1];
+        // Parse ints from strings
+        rangeStart = parseInt(rangeStart.substr(1));
+        rangeEnd = parseInt(rangeEnd.substr(1));
+        // Push first stop to queue
+        newLineOrder.push(rangePoints[0]);
+        // Create range
+        let rangeStep = (rangeStart < rangeEnd) ? +1 : -1;
+        while(rangeStart != rangeEnd) {
+          rangeStart += rangeStep;
+          newLineOrder.push(rangeLetter + _twoDigitString(rangeStart));
+        }
+      }
+    }
+    lines[color] = newLineOrder;
+  }
+}
+
+/* This would be nicer if I knew how to build each path from coordinates using D3. Sad! */
+var drawConnectingLines = function() {
+  for(let lineColor in lines) {
+    let stops = lines[lineColor];
+    let d = '';
+    for(let i in stops) {
+      let stop = stops[i];
+      
+    }
+  }
+}
+
+var loadRails = function() {
+  // Expand line range info
+  expandLineLists();
+  // Draw all connecting lines
 }
 
 var setStartingPositions = function() {
