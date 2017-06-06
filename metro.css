@@ -1,0 +1,11 @@
+/* jack morris 06/04/17 */
+.station {
+  stroke: black;
+  fill: white;
+  stroke-width: 4px;
+  r: 6;
+}
+.rail {
+  stroke-width: 8px;
+  fill: none;
+}
