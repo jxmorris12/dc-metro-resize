@@ -265,3 +265,6 @@ var load = function() {
 }
 
 $(document).ready(load);
+
+// $('svg').get(0).pauseAnimations();
+// $('svg').get(0).unpauseAnimations();
