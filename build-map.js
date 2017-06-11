@@ -169,7 +169,7 @@ var expandLineLists = function() {
 
 var loadTransferStations = function() {
   transferStations.forEach(transferStationName => {
-    let originalStation = $('[station-name^="' + transferStationName + '"]');
+    let originalStation = $('[station-name="' + transferStationName + '"]');
     let newStation = originalStation.clone();
     newStation.attr('class', 'large-station station');
     console.log('add !', newStation);
