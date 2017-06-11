@@ -42,6 +42,7 @@ stations = []
 for pt in filtered_pts:
   pt_i += 1
   img_rgb_copy = img_rgb.copy()
+  cv2.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
   cv2.rectangle(img_rgb_copy, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
   cv2.imshow('image ' + str(pt_i), img_rgb_copy)
   station_name = raw_input('Enter station name: ')

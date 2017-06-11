@@ -11,7 +11,7 @@ var metroLineColors = {
 }
 
 // Stations that were never provided by the API (I don't know why)
-let metroNonexistentStations = 'N05 C11';
+let metroNonexistentStations = 'N05-C11';
 let showStationIcons = true;
 
 // Global variables
